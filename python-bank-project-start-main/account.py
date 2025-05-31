@@ -1,87 +1,55 @@
-# can withdraw
-# can deposit
-# has interest
-# has balance
-# has currency
+from pydantic import BaseModel, Field, field_validator
 import random
+import re               # re = regex
 
-from db import Db
-from transaction import Transaction
+def generate_account_nr() -> str:
+    return ''.join(random.choices('0123456789', k=10))
 
+class Account(BaseModel):
+    balance: int = 0
+    first_name: str
+    last_name: str
+    ssn: str
+    account_nr: str = generate_account_nr()
 
-class Account:
+    class Config:
+        validate_default = True
 
-    def __init__(self):
-        self.conn = Db().get_conn()
-        self.balance = 0
+    @classmethod
+    def create(cls, first_name: str, last_name: str, ssn: str) -> "Account":
+        return cls(first_name=first_name, last_name=last_name, ssn=ssn)
 
-    @staticmethod
-    def generate_nr():
-        return str(random.randint(10 ** 9, 10 ** 10 - 1))
+    @field_validator('ssn')
+    @classmethod
+    def ssn_must_be_valid(cls, ssn: str) -> str:
+        pattern = r'^(?:\d{6}|\d{8})-\d{4}$'
+        if not re.match(pattern, ssn):
+            raise ValueError("SSN must me 10 or 12 numbers in the format YYMMDD-XXXX or YYYYMMDD-XXXX")
+        return ssn
 
-    def create(self, customer, bank, type, nr):
-        customer = customer.id
-        type = type
-        nr = bank.banknr + "-" + nr
-        bank = bank.id
-        credit = 0
-
-        try:
-            with self.conn:
-                cursor = self.conn.cursor()
-                cursor.execute("INSERT INTO accounts (customer, bank, type, nr, credit) VALUES (%s, %s, %s, %s, %s)", [customer, bank, type, nr, credit])
-                self.conn.commit()
-                print(f"Account '{nr}' created successfully. Getting data.")
-        except:
-            print(f"[Warning] Account with number {nr} already exists. Getting data.")
-        return self.get(nr)
-
-    def get(self, nr):
-        cursor = self.conn.cursor()
-        cursor.execute("SELECT * FROM accounts WHERE nr = %s", [nr])
-        account = cursor.fetchone()
-        if(account[0]):
-            print(f"Customer loaded.")
-            self.id = account[0]
-            self.customer = account[1]
-            self.bank = account[2]
-            self.type = account[3]
-            self.nr = account[4]
-            self.credit = account[5]
-            self.transactions = self.get_transactions()
-            return self
-        else:
-            print(f"[Warning] Account {nr} not found.")
-            return None
-
-    def get_transactions(self):
-        cursor = self.conn.cursor()
-        cursor.execute("SELECT * FROM transactions WHERE account_nr = %s", [self.nr,])
-        transactions = cursor.fetchall()
-        ts = []
-        for transaction in transactions:
-            ts.append({
-                "id": transaction[0],
-                "amount": transaction[1],
-                "account": transaction[2]
-            })
-        return ts
-
-    def get_balance(self):
-        balance = 0
-        for transaction in self.get_transactions():
-            balance += transaction['amount']
-        self.balance = balance
+    @field_validator('balance')
+    @classmethod
+    def balance_must_be_non_negative(cls, balance: int) -> int:
+        if balance < 0:
+            raise ValueError("Balance cannot be negative")
         return balance
 
-    def deposit(self, amount):
-        if amount > 0:
-            Transaction().create(amount, self)
+    def withdraw(self, amount: int) -> int:
+        if amount > 0 and self.balance >= amount:
+            self.balance -= amount
+            return amount
+        return 0
 
-    def withdraw(self, amount):
-        if(amount <= self.get_balance() + self.credit):
-            Transaction().create(-amount, self)
-            return -amount
-        else:
-            return 0
+    def deposit(self, amount: int) -> int:
+        # alternatively we could just have used a regular if case to prevent a negative deposit,
+        # which we really should do, but let's just use the validator anyway, so that it can error:)
+        self.balance += amount
+        # instead we use validator (after instanciation, like now, when calling a method)
+        self.balance_must_be_non_negative(self.balance)
+        return amount
 
+    def get_balance(self) -> int:
+        return self.balance
+
+    def get_account_nr(self) -> str:
+        return self.account_nr
