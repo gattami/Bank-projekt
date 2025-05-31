@@ -1,3 +1,4 @@
+from bank import Bank, skapa_validerad_bank
 # starta bank (banktjänsterna)
 from account import Account
 from bank import Bank
@@ -11,9 +12,18 @@ def main():
     # create a new customer
     customer = Customer().create("Bonjamin", "8001092456") # return customer object
 
-    # add the customer to the bank we created (and add a personal account, which every new customer gets)
+    # add the customer to the bank we created (and add a personal account)
     bank.add_customer(customer)
-    personal_account = customer.accounts[0]
+
+    # kontrollera om kunden har konton
+    if customer.accounts:
+        personal_account = customer.accounts[0]
+        print(f"Kontonummer: {personal_account.nr}")
+        print(f"before personal dep {personal_account.get_balance()}")
+    else:
+        print("[Fel] Kunden har inga konton.")
+        return
+
     print(f"before personal dep {personal_account.get_balance()}")
     # make a deposit
     personal_account.deposit(200)
@@ -49,5 +59,19 @@ def main():
     print(f"after savings withdraw outstanding {savings_account.get_balance()}")
 
 
+    def main():
+        bank = Bank()
+
+        # ✅ Test med giltiga data
+        skapa_validerad_bank(bank, name="Nordea", banknr="1234")
+
+        # ❌ Test med ogiltigt namn (tomt)
+        skapa_validerad_bank(bank, name="", banknr="1234")
+
+        # ❌ Test med ogiltigt banknummer (inte numeriskt)
+        skapa_validerad_bank(bank, name="Swedbank", banknr="ABC")
+
 if __name__ == '__main__':
     main()
+
+

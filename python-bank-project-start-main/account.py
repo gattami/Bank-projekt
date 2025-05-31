@@ -40,7 +40,8 @@ class Account:
         cursor = self.conn.cursor()
         cursor.execute("SELECT * FROM accounts WHERE nr = %s", [nr])
         account = cursor.fetchone()
-        if(account[0]):
+
+        if account is not None:
             print(f"Customer loaded.")
             self.id = account[0]
             self.customer = account[1]

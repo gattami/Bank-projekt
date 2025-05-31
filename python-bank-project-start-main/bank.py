@@ -46,4 +46,50 @@ class Bank:
     def add_account(self, customer, type, nr):
         new_account = Account().create(customer, self, type, nr)
         self.accounts.append(new_account)
+        customer.accounts.append(new_account)  # ←
         return new_account
+
+
+    def importera_transaktioner(self, csv_filväg):
+        import csv
+
+        giltiga_rader = []
+
+        with open(csv_filväg, newline='', encoding='utf-8') as csvfil:
+            läsare = csv.DictReader(csvfil)
+            for rad in läsare:
+                try:
+                    belopp = float(rad["amount"])
+                    if belopp < 0 or not rad["account_id"] or not rad["date"]:
+                        continue
+                    giltiga_rader.append((
+                        rad["account_id"],
+                        rad["amount"],
+                        rad["date"],
+                        rad.get("description", "")
+                    ))
+                except:
+                    continue
+
+        try:
+            with self.conn:
+                cursor = self.conn.cursor()
+                for rad in giltiga_rader:
+                    cursor.execute(
+                        """
+                        INSERT INTO transactions (account_id, amount, date, description)
+                        VALUES (%s, %s, %s, %s)
+                        """,
+                        rad
+                    )
+            print(f"✅ {len(giltiga_rader)} transaktioner har importerats korrekt.")
+        except Exception as fel:
+            self.conn.rollback()
+            print("❌ Ett fel uppstod vid import. Rollback har körts.")
+            print(fel)
+
+
+if __name__ == "__main__":
+    bank = Bank()
+    bank = bank.create("Tres Banko", "2345")
+    bank.importera_transaktioner("python-bank-project-start-main/data/transactions.csv")
