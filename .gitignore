@@ -175,3 +175,7 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Игнорировать мои локальные файлы
+guid.md
+db.py
