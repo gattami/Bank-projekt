@@ -81,3 +81,21 @@ Test 4: Valuta 'ZAR'
 Test 5: Valuta 'eur' (små bokstäver)
 [Manager Required] Godkännande behövs för valutan 'eur'.
 Är 'eur' godkänd? False
+
+## 4. Pydantic-validering i transaktionssystem
+
+**Syfte** Använda Pydantic för att säkerställa att endast korrekta och Förhindrar att ogiltiga belopp eller felaktigt formaterade valutor bearbetas.
+
+*pydantic_interest.py*
+
+Använde @validate_call från Pydantic för att validera argumenten:
+- amount måste vara av typen Decimal och vara större än 0.
+- currency måste vara en sträng med exakt tre stora bokstäver (regex-validering).
+
+> Tips! Decimal används i stället för float för att undvika avrundningsfel i finansiella beräkningar.
+
+*pydantic_manager.py*
+
+Använde @validate_call med Field(..., pattern=...) för att kontrollera att valutakoden är exakt tre stora bokstäver (t.ex. USD, EUR).
+
+> Tydliga felrapporter: Vid ogiltig valuta (t.ex. "us", "EURO", "SE K"), visas detaljerade felmeddelanden direkt.
