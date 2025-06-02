@@ -25,7 +25,7 @@ def test_create_success(monkeypatch):
     dummy_cursor.execute.return_value = None
 
     # Mockar Customer.get så att den returnerar en dummy-kund
-    monkeypatch.setattr(customer, "get", lambda ssn: type("DummyCustomer", (), {"name": "Ivan", "ssn": ssn})())
+    monkeypatch.setattr(customer, "get", lambda ssn: None)
 
     # Anropar create-metoden
     result = customer.create("Ivan", "9001011234")

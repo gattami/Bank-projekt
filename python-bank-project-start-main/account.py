@@ -74,15 +74,23 @@ class Account:
             balance += transaction['amount']
         self.balance = balance
         return balance
-
+#ändrat
     def deposit(self, amount):
-        if amount > 0:
-            Transaction().create(amount, self)
+        if amount <= 0:
+            print("Summan ska vara mer än 0")
+            return False
+        Transaction().create(amount, self)
+        return True
 
+#ändrat
     def withdraw(self, amount):
-        if(amount <= self.get_balance() + self.credit):
+        if amount <= 0:
+            print("Summan ska vara mer än 0")
+            return False
+        if amount <= self.get_balance() + self.credit:
             Transaction().create(-amount, self)
-            return -amount
+            return True
         else:
-            return 0
+            print("Otillräckliga medel för uttag")
+            return False
 

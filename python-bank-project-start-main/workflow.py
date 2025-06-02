@@ -3,7 +3,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 import os
 
-DB_URL = "postgresql://postgres:5432@localhost:5432/postgres"
+DB_URL = "postgresql://postgres:1111@localhost:5432/bank"
 
 CSV_TABLE_PAIRS = [
     ("data/sebank_customers_with_accounts.csv", "sebank_customers"),
