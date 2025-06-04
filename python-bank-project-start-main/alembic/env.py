@@ -1,7 +1,7 @@
 import sys
 import os
 
-# Добавляем путь к корневой папке проекта, чтобы можно было импортировать db_model_alembic
+# Lägg till sökvägen till projektets rotmapp så att db_model_alembic kan importeras
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from db_model_alembic import Base

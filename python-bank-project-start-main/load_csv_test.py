@@ -1,15 +1,16 @@
 import os
 import pandas as pd
 
-print("Текущая директория запуска:", os.getcwd())
+print("Aktuell arbetskatalog:", os.getcwd())
 
-# Загружаем CSV-файл
+# Läser in CSV-filen
 try:
     df = pd.read_csv("data/transactions.csv")
-    print("✅ Файл загружен успешно!")
+    print("✅ Filen har lästs in framgångsrikt!")
     print(df.head())
-    print(f"\nФорма данных: {df.shape}")
+    print(f"\nDatans form: {df.shape}")
 except FileNotFoundError:
-    print("❌ Файл не найден. Проверь путь: 'data/transactions.csv'")
+    print("❌ Filen hittades inte. Kontrollera sökvägen: 'data/transactions.csv'")
 except Exception as e:
-    print(f"❌ Произошла ошибка: {e}")
+    print(f"❌ Ett fel har inträffat: {e}")
+
